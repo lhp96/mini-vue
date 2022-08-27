@@ -2,15 +2,15 @@ const targetMap = new WeakMap();
 let activeEffect;
 class ReactiveEffect {
   private _fn: any;
-  constructor(fn) {
+  constructor(fn, public scheduler?) {
     this._fn = fn;
   }
   run() {
     return this._fn();
   }
 }
-export function effect(fn) {
-  const _effect = new ReactiveEffect(fn);
+export function effect(fn, options: any = {}) {
+  const _effect = new ReactiveEffect(fn, options.scheduler);
   activeEffect = _effect;
   _effect.run();
   activeEffect = null;
@@ -21,12 +21,15 @@ export function trigger(target: any, key: any, value: any) {
   if (!depsMap) return;
   let deps = depsMap.get(key);
   deps.forEach((effect) => {
-    effect.run();
+    if (effect.scheduler) {
+      effect.scheduler();
+    } else {
+      effect.run();
+    }
   });
 }
 
 export function track(target: any, key: any) {
-  // Implement
   if (!activeEffect) return;
   let depsMap = targetMap.get(target);
   if (!depsMap) {
