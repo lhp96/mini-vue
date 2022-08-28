@@ -21,7 +21,7 @@ function createSetter() {
     const oldVal = target[key];
     const res = Reflect.set(target, key, value);
     if (oldVal !== value) {
-      trigger(target, key, value);
+      trigger(target, key);
     }
     return res;
   };

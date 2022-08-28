@@ -68,7 +68,7 @@ describe("effect", () => {
     obj.prop = 2;
     expect(dummy).toBe(2);
     stop(runner);
-    obj.prop = 3;
+    obj.prop++;
     expect(dummy).toBe(2);
     runner();
     expect(dummy).toBe(3);
@@ -88,6 +88,23 @@ describe("effect", () => {
     );
     stop(runner);
     expect(onStop).toBeCalledTimes(1);
+  });
+
+  it("look something for stop", () => {
+    let ans, qps;
+    const foo = reactive({ count: 1 });
+    effect(() => {
+      ans = foo.count + 2;
+    });
+    const runner = effect(() => {
+      qps = foo.count * ans;
+    })
+    expect(ans).toBe(3);
+    expect(qps).toBe(3);
+    stop(runner);
+    foo.count = 5;
+    expect(qps).toBe(3);
+    expect(ans).toBe(7);
   });
 
   it("should observe basic properties", () => {

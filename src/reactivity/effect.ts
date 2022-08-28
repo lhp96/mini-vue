@@ -39,7 +39,7 @@ export function effect(fn, options: any = {}) {
   return runner;
 }
 
-export function trigger(target: any, key: any, value: any) {
+export function trigger(target: any, key: any) {
   let depsMap = targetMap.get(target);
   if (!depsMap) return;
   let deps = depsMap.get(key);
@@ -74,4 +74,5 @@ function cleanupEffect(effect) {
   effect.deps.forEach((dep) => {
     dep.delete(effect);
   });
+  effect.deps.length = 0;
 }
