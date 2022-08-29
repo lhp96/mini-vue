@@ -7,7 +7,7 @@ class ReactiveEffect {
   public scheduler: Function | undefined;
   deps: any = [];
   active = true;
-  onStop?: ()=> void
+  onStop?: () => void;
   constructor(fn, scheduler?: Function) {
     this._fn = fn;
     this.scheduler = scheduler;
@@ -18,7 +18,7 @@ class ReactiveEffect {
   stop() {
     if (this.active) {
       cleanupEffect(this);
-      if(this.onStop){
+      if (this.onStop) {
         this.onStop();
       }
       this.active = false;
@@ -43,6 +43,10 @@ export function trigger(target: any, key: any) {
   let depsMap = targetMap.get(target);
   if (!depsMap) return;
   let deps = depsMap.get(key);
+  triggerEffects(deps);
+}
+
+export function triggerEffects(deps) {
   deps.forEach((effect) => {
     if (effect.scheduler) {
       effect.scheduler();
@@ -62,6 +66,11 @@ export function track(target: any, key: any) {
   if (!deps) {
     depsMap.set(key, (deps = new Set()));
   }
+  trackEffects(deps);
+}
+
+export function trackEffects(deps) {
+  if (!activeEffect) return;
   deps.add(activeEffect);
   activeEffect.deps.push(deps);
 }
