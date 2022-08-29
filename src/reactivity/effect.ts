@@ -2,18 +2,23 @@ import { extend } from "../shared";
 
 const targetMap = new WeakMap();
 let activeEffect;
-class ReactiveEffect {
+export class ReactiveEffect {
   private _fn: any;
-  public scheduler: Function | undefined;
   deps: any = [];
   active = true;
   onStop?: () => void;
-  constructor(fn, scheduler?: Function) {
+  constructor(fn, public scheduler: Function | null = null) {
     this._fn = fn;
     this.scheduler = scheduler;
   }
   run() {
-    return this._fn();
+    if (!this.active) {
+      return this._fn();
+    }
+    activeEffect = this;
+    const res = this._fn();
+    activeEffect = null;
+    return res;
   }
   stop() {
     if (this.active) {
@@ -29,9 +34,7 @@ class ReactiveEffect {
 export function effect(fn, options: any = {}) {
   const _effect = new ReactiveEffect(fn, options.scheduler);
   extend(_effect, options);
-  activeEffect = _effect;
   _effect.run();
-  activeEffect = null;
   // bind是创建一个新的函数，需要手动调用
   const runner: any = _effect.run.bind(_effect);
   // 将effect 挂载到 返回的runner
