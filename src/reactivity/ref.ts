@@ -1,5 +1,5 @@
 import { trackEffects, triggerEffects } from "./effect";
-import { isProxy, reactive } from "./reactive";
+import { reactive } from "./reactive";
 import { hasChanged, isObject } from "../shared/index";
 
 export function ref(value) {
@@ -37,4 +37,18 @@ export function isRef(ref) {
 
 export function unRef(ref) {
   return isRef(ref) ? ref.value : ref;
+}
+
+export function proxyRefs(objectWithRefs) {
+  return new Proxy(objectWithRefs, {
+    get: (target, key) => {
+      return unRef(Reflect.get(target, key));
+    },
+    set: (target, key, value) => {
+      if (isRef(target[key]) && !isRef(value)) {
+        return (target[key].value = value);
+      }
+      return Reflect.set(target, key, value);
+    },
+  });
 }
