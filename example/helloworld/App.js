@@ -7,7 +7,7 @@ export const App = {
         id: "root",
         class: ["red", "hard"],
       },
-      "hi, this is my mini-vue"
+      [h("p", { class: "red" }, "hello"), h("p", { class: "blue" }, "mini-vue")]
     );
   },
   setup() {

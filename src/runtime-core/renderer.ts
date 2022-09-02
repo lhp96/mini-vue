@@ -7,6 +7,7 @@ export function render(vnode: any, container: any) {
 function patch(vnode: any, container: any) {
   console.log(vnode.type);
   if (typeof vnode.type === "string") {
+    // 去处理element
     processElement(vnode, container);
   } else if (isObject(vnode)) {
     // 去处理组件
@@ -30,8 +31,15 @@ function mountElement(vnode: any, container: any) {
   if (typeof children === "string") {
     el.textContent = children;
   } else if (Array.isArray(children)) {
+    mountChildren(children, el);
   }
   container.append(el);
+}
+
+function mountChildren(children: any, container: any) {
+  children.forEach((vnode) => {
+    patch(vnode, container);
+  });
 }
 
 function processComponent(vnode: any, container: any) {
