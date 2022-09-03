@@ -1,14 +1,16 @@
 import { isObject } from "../shared/index";
+import { ShapeFlags } from "../shared/ShapFlags";
 import { createComponentInstance, setupComponent } from "./component";
 
 export function render(vnode: any, container: any) {
   patch(vnode, container);
 }
 function patch(vnode: any, container: any) {
-  if (typeof vnode.type === "string") {
+  const {shapeFlag} = vnode;
+  if (shapeFlag & ShapeFlags.ELEMENT) {
     // 去处理element
     processElement(vnode, container);
-  } else if (isObject(vnode.type)) {
+  } else if (shapeFlag & ShapeFlags.STATEFUL_COMPONENT) {
     // 去处理组件
     processComponent(vnode, container);
   }
@@ -23,14 +25,14 @@ function mountElement(vnode: any, container: any) {
   const domEl = (vnode.el = document.createElement(vnode.type));
 
   // children: string or array
-  const { props, children } = vnode;
+  const { props, children, shapeFlag } = vnode;
   for (const key in props) {
     const val = props[key];
     domEl.setAttribute(key, val);
   }
-  if (typeof children === "string") {
+  if (shapeFlag & ShapeFlags.TEXT_CHILDREN){
     domEl.textContent = children;
-  } else if (Array.isArray(children)) {
+  } else if (shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
     mountChildren(vnode, domEl);
   }
   // finally 将 domEl 加入dom树中
