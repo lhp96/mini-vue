@@ -1,14 +1,18 @@
 import { h } from "../../lib/mini-vue.esm.js";
 
 export const Foo = {
-  setup(props) {
-    console.log("props", props);
-    // shallowReadonly
-    props.count = 3;
-    console.log("props", props);
+  setup(props, { emit }) {
+    const emitAdd = () => {
+      console.log("emit add");
+      emit("add");
+    };
+    return {
+      emitAdd,
+    };
   },
   render() {
-    return h("div", {}, "foo: " + this.count);
-    addsafa
+    const btn = h("button", { onclick: this.emitAdd }, "emitAdd");
+    const foo = h("p", {}, "foo");
+    return h("div", {}, [foo, btn]);
   },
 };
