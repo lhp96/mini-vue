@@ -6,7 +6,7 @@ export function render(vnode: any, container: any) {
   patch(vnode, container);
 }
 function patch(vnode: any, container: any) {
-  const {shapeFlag} = vnode;
+  const { shapeFlag } = vnode;
   if (shapeFlag & ShapeFlags.ELEMENT) {
     // 去处理element
     processElement(vnode, container);
@@ -28,9 +28,15 @@ function mountElement(vnode: any, container: any) {
   const { props, children, shapeFlag } = vnode;
   for (const key in props) {
     const val = props[key];
-    domEl.setAttribute(key, val);
+    const isOn = (key: string) => /^on[A-Z]/.test(key);
+    if (isOn(key)) {
+      const event = key.slice(2).toLowerCase();
+      domEl.addEventListener(event, val);
+    } else {
+      domEl.setAttribute(key, val);
+    }
   }
-  if (shapeFlag & ShapeFlags.TEXT_CHILDREN){
+  if (shapeFlag & ShapeFlags.TEXT_CHILDREN) {
     domEl.textContent = children;
   } else if (shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
     mountChildren(vnode, domEl);
