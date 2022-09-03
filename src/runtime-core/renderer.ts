@@ -5,11 +5,10 @@ export function render(vnode: any, container: any) {
   patch(vnode, container);
 }
 function patch(vnode: any, container: any) {
-  console.log(vnode.type);
   if (typeof vnode.type === "string") {
     // 去处理element
     processElement(vnode, container);
-  } else if (isObject(vnode)) {
+  } else if (isObject(vnode.type)) {
     // 去处理组件
     processComponent(vnode, container);
   }
@@ -20,24 +19,26 @@ function processElement(vnode: any, container: any) {
 }
 
 function mountElement(vnode: any, container: any) {
-  const el = document.createElement(vnode.type);
+  // 创建 dom
+  const domEl = document.createElement(vnode.type);
 
   // children: string or array
   const { props, children } = vnode;
   for (const key in props) {
     const val = props[key];
-    el.setAttribute(key, val);
+    domEl.setAttribute(key, val);
   }
   if (typeof children === "string") {
-    el.textContent = children;
+    domEl.textContent = children;
   } else if (Array.isArray(children)) {
-    mountChildren(children, el);
+    mountChildren(vnode, domEl);
   }
-  container.append(el);
+  // finally 将 domEl 加入dom树中
+  container.append(domEl);
 }
 
-function mountChildren(children: any, container: any) {
-  children.forEach((vnode) => {
+function mountChildren(vnode: any, container: any) {
+  vnode.children.forEach((vnode) => {
     patch(vnode, container);
   });
 }
