@@ -1,21 +1,21 @@
+import { Foo } from "./Foo.js";
 import { h } from "../../lib/mini-vue.esm.js";
-window.self = null;
 export const App = {
   render() {
-    window.self = this;
     return h(
       "div",
       {
         id: "root",
         class: ["red", "hard"],
-        onClick(){
+        onClick() {
           console.log("click");
         },
-        onMousedown(){
+        onMousedown() {
           console.log("mousedown");
-        }
+        },
       },
-      "hello, " + this.msg
+      [h("div", {}, "hi," + this.msg), h(Foo, { count: 1 })]
+      // "hello, " + this.msg
       // [h("p", { class: "red" }, "hello"), h("p", { class: "blue" }, "mini-vue")]
     );
   },
