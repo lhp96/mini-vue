@@ -1,4 +1,4 @@
-import { extend } from "../shared";
+import { extend } from "../shared/index";
 
 const targetMap = new WeakMap();
 let activeEffect;
