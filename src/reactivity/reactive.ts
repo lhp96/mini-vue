@@ -1,3 +1,4 @@
+import { isObject } from "../shared/index";
 import {
   mutableHandlers,
   readonlyHandlers,
@@ -33,5 +34,9 @@ export function isReadonly(raw) {
 }
 
 function createActiveObject(raw, baseHandlers) {
+  if (!isObject(raw)) {
+    console.warn(`raw 必须是一个object`);
+    return raw;
+  }
   return new Proxy(raw, baseHandlers);
 }
