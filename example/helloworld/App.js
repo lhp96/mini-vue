@@ -7,13 +7,18 @@ export const App = {
       h(
         Foo,
         // on + Event
-        { onAdd: this.onAdd }
+        {
+          onAdd: this.onAdd,
+          onAddFoo() {
+            console.log("onAddFoo");
+          },
+        }
       ),
     ]);
   },
   setup() {
-    function onAdd() {
-      console.log("onAdd");
+    function onAdd(a, b) {
+      console.log("onAdd", a, b);
     }
     return {
       onAdd,

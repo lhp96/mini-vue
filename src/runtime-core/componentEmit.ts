@@ -1,18 +1,15 @@
-export function emit(instance, event) {
+import { camelize, toHandlerKey } from "../shared/index";
+
+export function emit(instance, event, ...args) {
   console.log("enter emit", event);
 
   // instance.props -> event
   const { props } = instance;
 
   // TPP 特定 -> 通用
-  const capitalize = (str: string) => {
-    return str.charAt(0).toUpperCase() + str.slice(1);
-  };
-  const toHandlerKey = (str: string) => {
-    return str ? "on" + capitalize(str) : "";
-  };
+  // add  & add-foo  & emit("xxx", obj, str);
 
-  const handlerName = toHandlerKey(event);
+  const handlerName = toHandlerKey(camelize(event));
   const handler = props[handlerName];
-  handler && handler();
+  handler && handler(...args);
 }
