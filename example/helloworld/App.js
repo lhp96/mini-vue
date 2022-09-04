@@ -2,26 +2,11 @@ import { Foo } from "./Foo.js";
 import { h } from "../../lib/mini-vue.esm.js";
 export const App = {
   render() {
-    return h("div", {}, [
-      h("p", {}, "hello"),
-      h(
-        Foo,
-        // on + Event
-        {
-          onAdd: this.onAdd,
-          onAddFoo() {
-            console.log("onAddFoo");
-          },
-        }
-      ),
-    ]);
+    const app = h("div", {}, "App");
+    const foo = h(Foo, {}, h("h1", {}, "msg for slots"));
+    return h("div", {}, [app, foo]);
   },
   setup() {
-    function onAdd(a, b) {
-      console.log("onAdd", a, b);
-    }
-    return {
-      onAdd,
-    };
+    return {};
   },
 };

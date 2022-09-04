@@ -1,19 +1,13 @@
 import { h } from "../../lib/mini-vue.esm.js";
 
 export const Foo = {
-  setup(props, { emit }) {
-    const emitAdd = () => {
-      console.log("emit add");
-      emit("add", 1, 3);
-      emit("add-foo");
-    };
-    return {
-      emitAdd,
-    };
+  setup() {
+    return {};
   },
   render() {
-    const btn = h("button", { onClick: this.emitAdd }, "emitAdd");
     const foo = h("p", {}, "foo");
-    return h("div", {}, [foo, btn]);
+    // Foo .vnode .children
+    console.log("slots: ", this.$slots);
+    return h("div", {}, [foo, this.$slots]);
   },
 };
