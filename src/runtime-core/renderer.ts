@@ -1,17 +1,26 @@
 import { ShapeFlags } from "../shared/ShapFlags";
 import { createComponentInstance, setupComponent } from "./component";
+import { Fragment } from "./vnode";
 
 export function render(vnode: any, container: any) {
   patch(vnode, container);
 }
 function patch(vnode: any, container: any) {
-  const { shapeFlag } = vnode;
-  if (shapeFlag & ShapeFlags.ELEMENT) {
-    // 去处理element
-    processElement(vnode, container);
-  } else if (shapeFlag & ShapeFlags.STATEFUL_COMPONENT) {
-    // 去处理组件
-    processComponent(vnode, container);
+  const { type, shapeFlag } = vnode;
+  switch (type) {
+    case Fragment:
+      mountChildren(vnode, container);
+      break;
+
+    default:
+      if (shapeFlag & ShapeFlags.ELEMENT) {
+        // 去处理element
+        processElement(vnode, container);
+      } else if (shapeFlag & ShapeFlags.STATEFUL_COMPONENT) {
+        // 去处理组件
+        processComponent(vnode, container);
+      }
+      break;
   }
 }
 
