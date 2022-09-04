@@ -8,10 +8,12 @@ export const Foo = {
     const foo = h("p", {}, "foo");
     // Foo .vnode .children
     console.log("slots: ", this.$slots);
+    // 作用域插槽
+    const age = 19;
     return h("div", {}, [
-      renderSlots(this.$slots, "header"),
+      renderSlots(this.$slots, "header", { age }),
       foo,
-      renderSlots(this.$slots, "footer"),
+      renderSlots(this.$slots, "footer", age),
     ]);
   },
 };

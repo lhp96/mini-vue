@@ -7,8 +7,8 @@ export const App = {
       Foo,
       {},
       {
-        header: h("h1", {}, "msg for slots"),
-        footer: h("h1", {}, "msg for slots2"),
+        header: ({ age }) => h("h1", {}, `header is ${age} 岁`),
+        footer: () => h("h1", {}, "footer: for 作用域插槽"),
       }
     );
     return h("div", {}, [app, foo]);
