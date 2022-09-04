@@ -3,6 +3,10 @@ import { h } from "../../lib/mini-vue.esm.js";
 export const App = {
   render() {
     const app = h("div", {}, "App");
+    // const foo = h(Foo, {}, [
+    //   h("h1", {}, "msg for slots"),
+    //   h("h1", {}, "msg for slots2"),
+    // ]);
     const foo = h(Foo, {}, h("h1", {}, "msg for slots"));
     return h("div", {}, [app, foo]);
   },

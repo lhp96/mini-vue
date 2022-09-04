@@ -1,4 +1,4 @@
-import { h } from "../../lib/mini-vue.esm.js";
+import { h, renderSlots } from "../../lib/mini-vue.esm.js";
 
 export const Foo = {
   setup() {
@@ -8,6 +8,6 @@ export const Foo = {
     const foo = h("p", {}, "foo");
     // Foo .vnode .children
     console.log("slots: ", this.$slots);
-    return h("div", {}, [foo, this.$slots]);
+    return h("div", {}, [foo, renderSlots(this.$slots)]);
   },
 };
