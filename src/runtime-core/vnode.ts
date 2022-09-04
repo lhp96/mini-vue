@@ -1,5 +1,6 @@
 import { ShapeFlags } from "../shared/ShapFlags";
 export const Fragment = Symbol("Fragment");
+export const Text = Symbol("Text");
 
 export function createVNode(type, props?, children?) {
   const vnode = {
@@ -29,4 +30,8 @@ function getShapeFlag(type: any) {
   return typeof type === "string"
     ? ShapeFlags.ELEMENT
     : ShapeFlags.STATEFUL_COMPONENT;
+}
+
+export function createTextVNode (text: string) {
+  return createVNode(Text,{}, text);
 }
