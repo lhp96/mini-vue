@@ -3,16 +3,29 @@ export function provide(key, value) {
   // 存数据
   const currentInstance: any = getCurrentInstance();
   if (currentInstance) {
-    const { provides } = currentInstance;
+    let { provides } = currentInstance;
+    const parentProvides = currentInstance.parent.provides;
+
+    // init
+    if (provides === parentProvides) {
+      provides = currentInstance.provides = Object.create(parentProvides);
+    }
     provides[key] = value;
   }
 }
-export function inject(key) {
+export function inject(key, defaultValue) {
   // 拿数据
   const currentInstance: any = getCurrentInstance();
   if (currentInstance) {
     const parentProvides = currentInstance.parent.provides;
 
-    return parentProvides[key];
+    if (key in parentProvides) {
+      return parentProvides[key];
+    } else if (defaultValue) {
+      if (typeof defaultValue === "function") {
+        return defaultValue();
+      }
+      return defaultValue;
+    }
   }
 }

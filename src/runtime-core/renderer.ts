@@ -2,8 +2,8 @@ import { ShapeFlags } from "../shared/ShapFlags";
 import { createComponentInstance, setupComponent } from "./component";
 import { Fragment, Text } from "./vnode";
 
-export function render(vnode: any, container: any, parentInstance) {
-  patch(vnode, container, parentInstance);
+export function render(vnode: any, container: any) {
+  patch(vnode, container, null);
 }
 function patch(vnode: any, container: any, parentInstance) {
   const { type, shapeFlag } = vnode;
