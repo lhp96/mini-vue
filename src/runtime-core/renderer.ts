@@ -8,7 +8,8 @@ export function createRenderer(options) {
     createElement: hostCreateElement,
     patchProp: hostPatchProp,
     insert: hostInsert,
-    setElementText: hostSetElementText
+    setElementText: hostSetElementText,
+    createText: hostCreateText
   } = options;
 
   function render(vnode: any, container: any) {
@@ -37,9 +38,8 @@ export function createRenderer(options) {
   }
 
   function processText(vnode: any, container: any) {
-    const { children } = vnode;
-    const textNode = (vnode.el = document.createTextNode(children));
-    container.append(textNode);
+    const textNode = vnode.el = hostCreateText(vnode.children);
+    hostInsert(textNode, container);
   }
 
   function processElement(vnode: any, container: any, parentInstance) {
@@ -50,14 +50,14 @@ export function createRenderer(options) {
     // 创建 dom & 挂载vnode.el
     const domEl = (vnode.el = hostCreateElement(vnode.type));
 
-    // children: string or array
     const { props, children, shapeFlag } = vnode;
+    // props: attributes or event
     for (const key in props) {
       const val = props[key];
       hostPatchProp(domEl, key, val);
     }
+    // children: string or array
     if (shapeFlag & ShapeFlags.TEXT_CHILDREN) {
-      // domEl.textContent = children;
       hostSetElementText(domEl, children);
     } else if (shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
       mountChildren(vnode, domEl, parentInstance);

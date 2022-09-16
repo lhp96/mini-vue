@@ -22,11 +22,16 @@ export function setElementText(node, text) {
   node.textContent = text;
 }
 
+export function createText(text) {
+  return document.createTextNode(text);
+}
+
 const renderer: any = createRenderer({
   createElement,
   patchProp,
   insert,
   setElementText,
+  createText,
 });
 
 export function createApp(...args) {
