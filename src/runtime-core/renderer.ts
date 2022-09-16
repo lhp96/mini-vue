@@ -8,6 +8,7 @@ export function createRenderer(options) {
     createElement: hostCreateElement,
     patchProp: hostPatchProp,
     insert: hostInsert,
+    setElementText: hostSetElementText
   } = options;
 
   function render(vnode: any, container: any) {
@@ -56,7 +57,8 @@ export function createRenderer(options) {
       hostPatchProp(domEl, key, val);
     }
     if (shapeFlag & ShapeFlags.TEXT_CHILDREN) {
-      domEl.textContent = children;
+      // domEl.textContent = children;
+      hostSetElementText(domEl, children);
     } else if (shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
       mountChildren(vnode, domEl, parentInstance);
     }

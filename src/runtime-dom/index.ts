@@ -18,10 +18,15 @@ export function insert(el, parent) {
   parent.appendChild(el);
 }
 
+export function setElementText(node, text) {
+  node.textContent = text;
+}
+
 const renderer: any = createRenderer({
   createElement,
   patchProp,
   insert,
+  setElementText,
 });
 
 export function createApp(...args) {
