@@ -7,6 +7,7 @@ export function createVNode(type, props?, children?) {
     type,
     props,
     children,
+    key: props && props.key,
     shapeFlag: getShapeFlag(type),
     el: null,
   };
@@ -32,6 +33,6 @@ function getShapeFlag(type: any) {
     : ShapeFlags.STATEFUL_COMPONENT;
 }
 
-export function createTextVNode (text: string) {
-  return createVNode(Text,{}, text);
+export function createTextVNode(text: string) {
+  return createVNode(Text, {}, text);
 }

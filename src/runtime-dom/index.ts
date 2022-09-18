@@ -18,8 +18,8 @@ export function patchProp(el, key, newVal) {
   }
 }
 
-export function insert(el, parent) {
-  parent.appendChild(el);
+export function insert(child, parent, anchor) {
+  parent.insertBefore(child, anchor || null);
 }
 
 export function setElementText(node, text) {
