@@ -12,6 +12,7 @@ export function createRenderer(options) {
     insert: hostInsert,
     setElementText: hostSetElementText,
     createText: hostCreateText,
+    remove: hostRemove,
   } = options;
 
   function render(vnode: any, container: any) {
@@ -41,7 +42,7 @@ export function createRenderer(options) {
 
   function processFragment(n1, n2, container: any, parentInstance: any) {
     if (!n1) {
-      mountChildren(n2, container, parentInstance);
+      mountChildren(n2.children, container, parentInstance);
     } else {
     }
   }
@@ -74,13 +75,13 @@ export function createRenderer(options) {
     if (shapeFlag & ShapeFlags.TEXT_CHILDREN) {
       hostSetElementText(domEl, children);
     } else if (shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
-      mountChildren(vnode, domEl, parentInstance);
+      mountChildren(vnode.children, domEl, parentInstance);
     }
     hostInsert(domEl, container);
   }
 
-  function mountChildren(vnode: any, container: any, parentInstance) {
-    vnode.children.forEach((v) => {
+  function mountChildren(children: any, container: any, parentInstance) {
+    children.forEach((v) => {
       patch(null, v, container, parentInstance);
     });
   }
@@ -96,6 +97,7 @@ export function createRenderer(options) {
       const newProps = n2.props || EMPTY_OBJ;
       const el = (n2.el = n1.el);
       patchProps(el, oldProps, newProps);
+      patchChildren(n1, n2, el, parentInstance);
     }
   }
   function patchProps(el, oldProps, newProps) {
@@ -114,6 +116,25 @@ export function createRenderer(options) {
             hostPatchProp(el, key, null);
           }
         }
+      }
+    }
+  }
+  function patchChildren(n1: any, n2: any, container, parentInstance) {
+    const { shapeFlag: prevShapeFlag, children: c1 } = n1;
+    const { shapeFlag: nextShapeFlag, children: c2 } = n2;
+
+    if (nextShapeFlag & ShapeFlags.TEXT_CHILDREN) {
+      if (prevShapeFlag & ShapeFlags.ARRAY_CHILDREN) {
+        unmountChildren(c1);
+      }
+      if (c1 !== c2) {
+        hostSetElementText(container, c2);
+      }
+    } else {
+      // newChildren is Array
+      if (prevShapeFlag & ShapeFlags.TEXT_CHILDREN) {
+        hostSetElementText(container);
+        mountChildren(c2, container, parentInstance);
       }
     }
   }
@@ -146,11 +167,13 @@ export function createRenderer(options) {
     });
   }
 
+  function unmountChildren(children) {
+    children.forEach((child) => {
+      unmount(child);
+    });
+  }
   function unmount(vnode) {
-    const parent = vnode.el.parentNode;
-    if (parent) {
-      parent.removeChild(vnode.el);
-    }
+    hostRemove(vnode.el);
   }
 
   return {

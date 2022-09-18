@@ -17,7 +17,7 @@ export const App = {
         {
           onClick: () => {
             console.log("click button");
-            window.isChange.value = true;
+            window.isChange.value = !window.isChange.value;
           },
         },
         "Change Children"

@@ -30,12 +30,20 @@ export function createText(text) {
   return document.createTextNode(text);
 }
 
+function remove(child) {
+  const parent = child.parentNode;
+  if (parent) {
+    parent.removeChild(child);
+  }
+}
+
 const renderer: any = createRenderer({
   createElement,
   patchProp,
   insert,
   setElementText,
   createText,
+  remove,
 });
 
 export function createApp(...args) {
