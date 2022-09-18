@@ -3,6 +3,7 @@ import { createComponentInstance, setupComponent } from "./component";
 import { Fragment, Text } from "./vnode";
 import { createAppApi } from "./createApp";
 import { effect } from "../reactivity";
+import { EMPTY_OBJ } from "../shared";
 
 export function createRenderer(options) {
   const {
@@ -87,18 +88,34 @@ export function createRenderer(options) {
   function patchElement(n1, n2, container: any, parentInstance: any) {
     // type props children
     // patchChildren -> diff 算法
-    // if(n1.type !== n2.type){
-    //   unmount(n1);
-    //   mountElement(n2);
-    // }
-    const parent = n1.el.parentNode;
-    if (parent) {
-      parent.removeChild(n1.el);
+    if (n1.type !== n2.type) {
+      unmount(n1);
+      mountElement(n2, container, parentInstance);
+    } else {
+      const oldProps = n1.props || EMPTY_OBJ;
+      const newProps = n2.props || EMPTY_OBJ;
+      const el = (n2.el = n1.el);
+      patchProps(el, oldProps, newProps);
     }
-    mountElement(n2, container, parentInstance);
+  }
+  function patchProps(el, oldProps, newProps) {
+    if (oldProps !== newProps) {
+      for (const key in newProps) {
+        const prevProp = oldProps[key];
+        const nextProp = newProps[key];
+        if (prevProp !== nextProp) {
+          hostPatchProp(el, key, nextProp);
+        }
+      }
 
-    // patchProp();
-    // patchChildren();
+      if (oldProps !== EMPTY_OBJ) {
+        for (const key in oldProps) {
+          if (!(key in newProps)) {
+            hostPatchProp(el, key, null);
+          }
+        }
+      }
+    }
   }
 
   function processComponent(n1, n2: any, container: any, parentInstance) {
@@ -127,6 +144,13 @@ export function createRenderer(options) {
         patch(preSubTree, subTree, container, instance);
       }
     });
+  }
+
+  function unmount(vnode) {
+    const parent = vnode.el.parentNode;
+    if (parent) {
+      parent.removeChild(vnode.el);
+    }
   }
 
   return {

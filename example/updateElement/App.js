@@ -1,20 +1,89 @@
 import { h, ref } from "../../lib/mini-vue.esm.js";
+import UpdateTagName from "./UpdateTagName.js";
 export const App = {
+  name: "App",
+
   setup() {
-    const counter = ref(1);
-    function inc() {
-      console.log("click-add");
-      counter.value += 1;
-    }
+    const count = ref(0);
+
+    const onClick = () => {
+      // count.value++;
+      // const oldEl = document.querySelector("#count");
+      // const newEl = document.createElement("h1");
+      // newEl.setAttribute("id", "count");
+      // newEl.innerHTML = `count:0`;
+      // oldEl.parentNode.replaceChild(newEl, oldEl);
+      console.log("change");
+      window.isChange.value = true;
+    };
+
+    const props = ref({
+      foo: "foo",
+      bar: "bar",
+    });
+    const onChangePropsDemo1 = () => {
+      props.value.foo = "new-foo";
+    };
+
+    const onChangePropsDemo2 = () => {
+      props.value.foo = undefined;
+    };
+
+    const onChangePropsDemo3 = () => {
+      props.value = {
+        foo: "foo",
+      };
+    };
+
     return {
-      counter,
-      inc,
+      count,
+      onClick,
+      onChangePropsDemo1,
+      onChangePropsDemo2,
+      onChangePropsDemo3,
+      props,
     };
   },
   render() {
-    return h("div", {}, [
-      h("div", {}, "" + this.counter),
-      h("button", { onClick: this.inc }, "click"),
-    ]);
+    return h(
+      "div",
+      {
+        id: "root",
+        ...this.props,
+      },
+      [
+        h(UpdateTagName),
+        h(
+          "button",
+          {
+            onClick: this.onClick,
+          },
+          "click_to_update_tagName"
+        ),
+        h(
+          "button",
+          {
+            onClick: this.onChangePropsDemo1,
+          },
+          "changeProps - 值改变了 - 修改"
+        ),
+
+        h(
+          "button",
+          {
+            onClick: this.onChangePropsDemo2,
+          },
+          "changeProps - 值变成了 undefined - 删除"
+        ),
+
+        h(
+          "button",
+          {
+            onClick: this.onChangePropsDemo3,
+          },
+          "changeProps - key 在新的里面没有了 - 删除"
+        ),
+      ]
+    );
   },
 };
