@@ -18,7 +18,7 @@ export function createRenderer(options) {
   function render(vnode: any, container: any) {
     patch(null, vnode, container, null, null);
   }
-  function patch(n1, n2: any, container: any, parentInstance, anchor) {
+  function patch(n1, n2, container, parentInstance, anchor) {
     const { type, shapeFlag } = n2;
     switch (type) {
       case Fragment:
@@ -40,13 +40,7 @@ export function createRenderer(options) {
     }
   }
 
-  function processFragment(
-    n1,
-    n2,
-    container: any,
-    parentInstance: any,
-    anchor
-  ) {
+  function processFragment(n1, n2, container, parentInstance, anchor) {
     if (!n1) {
       mountChildren(n2.children, container, parentInstance, anchor);
     } else {
@@ -86,12 +80,7 @@ export function createRenderer(options) {
     hostInsert(domEl, container);
   }
 
-  function mountChildren(
-    children: any,
-    container: any,
-    parentInstance,
-    anchor
-  ) {
+  function mountChildren(children, container, parentInstance, anchor) {
     children.forEach((v) => {
       patch(null, v, container, parentInstance, anchor);
     });
@@ -130,7 +119,7 @@ export function createRenderer(options) {
       }
     }
   }
-  function patchChildren(n1: any, n2: any, container, parentInstance, anchor) {
+  function patchChildren(n1, n2, container, parentInstance, anchor) {
     const { shapeFlag: prevShapeFlag, children: c1 } = n1;
     const { shapeFlag: nextShapeFlag, children: c2 } = n2;
 
@@ -162,23 +151,23 @@ export function createRenderer(options) {
     let e2 = arr2.length - 1;
     let len1 = arr1.length;
     let len2 = arr2.length;
-    let i = 0;
-    function isSameVNode(n1, n2) {
+    let idx = 0;
+    function isSameVNodeType(n1, n2) {
       return n1.type === n2.type && n1.key === n2.key;
     }
 
     // 从左边开始对比
-    while (i <= e1 && i <= e2) {
-      if (isSameVNode(arr1[i], arr2[i])) {
-        patch(arr1[i], arr2[i], container, parentInstance, parentAnchor);
-        i++;
+    while (idx <= e1 && idx <= e2) {
+      if (isSameVNodeType(arr1[idx], arr2[idx])) {
+        patch(arr1[idx], arr2[idx], container, parentInstance, parentAnchor);
+        idx++;
       } else {
         break;
       }
     }
     // 再从右边开始
     while (e1 >= 0 && e2 >= 0) {
-      if (isSameVNode(arr1[e1], arr2[e2])) {
+      if (isSameVNodeType(arr1[e1], arr2[e2])) {
         patch(arr1[e1--], arr2[e2--], container, parentInstance, parentAnchor);
       } else {
         break;
@@ -186,51 +175,71 @@ export function createRenderer(options) {
     }
     // 确定范围： 上面：i ~ e1  下面：i ~ e2
     // 1. 添加新的
-    if (i > e1) {
-      if (i <= e2) {
+    if (idx > e1) {
+      if (idx <= e2) {
         const nextPos = e2 + 1;
         const anchor = nextPos < len2 ? arr2[nextPos].el : null;
-        while (i <= e2) {
-          patch(null, arr2[i++], container, parentInstance, anchor);
+        while (idx <= e2) {
+          patch(null, arr2[idx++], container, parentInstance, anchor);
         }
       }
-    } else if (i > e2) {
+    } else if (idx > e2) {
       // 2.删除旧的
-      while (i <= e1) {
-        unmount(arr1[i++]);
+      while (idx <= e1) {
+        unmount(arr1[idx++]);
+      }
+    } else {
+      // 中间对比 1.删除没用的旧节点
+      let s1 = idx;
+      let s2 = idx;
+      let patched = 0;
+      const toBePatched = e2 - s2 + 1;
+      const keyToNewIndexMap = new Map();
+      for (let i = s2; i <= e2; i++) {
+        const nextChild = arr2[i];
+        keyToNewIndexMap.set(nextChild.key, i);
+      }
+      for (let i = s1; i <= e1; i++) {
+        const prevChild = arr1[i];
+        if (patched >= toBePatched) {
+          unmount(prevChild);
+          continue;
+        }
+        let newIndex;
+        if (prevChild !== null) {
+          newIndex = keyToNewIndexMap.get(prevChild.key);
+        } else {
+          for (let j = s2; j < e2; j++) {
+            if (isSameVNodeType(prevChild, arr2[j])) {
+              newIndex = j;
+              break;
+            }
+          }
+        }
+
+        if (newIndex === undefined) {
+          unmount(prevChild);
+        } else {
+          patch(prevChild, arr2[newIndex], container, parentInstance, null);
+          patched++;
+        }
       }
     }
   }
 
-  function processComponent(
-    n1,
-    n2: any,
-    container: any,
-    parentInstance,
-    anchor
-  ) {
+  function processComponent(n1, n2, container, parentInstance, anchor) {
     if (!n1) {
       mountComponent(n2, container, parentInstance, anchor);
     } else {
     }
   }
-  function mountComponent(
-    initialVNode: any,
-    container: any,
-    parentInstance,
-    anchor
-  ) {
+  function mountComponent(initialVNode, container, parentInstance, anchor) {
     const instance = createComponentInstance(initialVNode, parentInstance);
 
     setupComponent(instance);
     setupRenderEffect(instance, initialVNode, container, anchor);
   }
-  function setupRenderEffect(
-    instance: any,
-    initialVNode: any,
-    container: any,
-    anchor
-  ) {
+  function setupRenderEffect(instance, initialVNode, container, anchor) {
     effect(() => {
       if (!instance.isMounted) {
         const { proxy } = instance;
