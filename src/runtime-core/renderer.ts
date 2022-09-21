@@ -77,7 +77,7 @@ export function createRenderer(options) {
     } else if (shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
       mountChildren(vnode.children, domEl, parentInstance, anchor);
     }
-    hostInsert(domEl, container);
+    hostInsert(domEl, container, anchor);
   }
 
   function mountChildren(children, container, parentInstance, anchor) {
@@ -166,7 +166,7 @@ export function createRenderer(options) {
       }
     }
     // 再从右边开始
-    while (e1 >= 0 && e2 >= 0) {
+    while (e1 >= idx && e2 >= idx) {
       if (isSameVNodeType(arr1[e1], arr2[e2])) {
         patch(arr1[e1--], arr2[e2--], container, parentInstance, parentAnchor);
       } else {
@@ -174,29 +174,33 @@ export function createRenderer(options) {
       }
     }
     // 确定范围： 上面：i ~ e1  下面：i ~ e2
-    // 1. 添加新的
-    if (idx > e1) {
-      if (idx <= e2) {
-        const nextPos = e2 + 1;
-        const anchor = nextPos < len2 ? arr2[nextPos].el : null;
-        while (idx <= e2) {
-          patch(null, arr2[idx++], container, parentInstance, anchor);
-        }
+    if (idx > e1 && idx <= e2) {
+      // 1. 添加新的
+      const nextPos = e2 + 1;
+      const anchor = nextPos < len2 ? arr2[nextPos].el : null;
+      while (idx <= e2) {
+        patch(null, arr2[idx++], container, parentInstance, anchor);
       }
-    } else if (idx > e2) {
+    } else if (idx > e2 && idx <= e1) {
       // 2.删除旧的
       while (idx <= e1) {
         unmount(arr1[idx++]);
       }
     } else {
-      // 中间对比 1.删除没用的旧节点
+      // 3.中间对比
       let s1 = idx;
       let s2 = idx;
       let patched = 0;
       const toBePatched = e2 - s2 + 1;
       const keyToNewIndexMap = new Map();
+      const newIndexToOldIndexMap = new Array(toBePatched);
+      newIndexToOldIndexMap.fill(0);
+      let moved = false;
+      let maxNewIndexSoFar = 0;
+      // 构建索引表
       for (let i = s2; i <= e2; i++) {
         const nextChild = arr2[i];
+        // 建立映射关系：{节点.key：新的坐标}
         keyToNewIndexMap.set(nextChild.key, i);
       }
       for (let i = s1; i <= e1; i++) {
@@ -206,10 +210,10 @@ export function createRenderer(options) {
           continue;
         }
         let newIndex;
-        if (prevChild !== null) {
+        if (prevChild.key != null) {
           newIndex = keyToNewIndexMap.get(prevChild.key);
         } else {
-          for (let j = s2; j < e2; j++) {
+          for (let j = s2; j <= e2; j++) {
             if (isSameVNodeType(prevChild, arr2[j])) {
               newIndex = j;
               break;
@@ -220,8 +224,36 @@ export function createRenderer(options) {
         if (newIndex === undefined) {
           unmount(prevChild);
         } else {
+          // 对比相同key的节点
+          if (newIndex >= maxNewIndexSoFar) {
+            maxNewIndexSoFar = newIndex;
+          } else {
+            moved = true;
+          }
+          // 新arr节点在原arr的下标 + 1 （防止0，0代表新的节点）
+          newIndexToOldIndexMap[newIndex - s2] = i + 1;
           patch(prevChild, arr2[newIndex], container, parentInstance, null);
           patched++;
+        }
+      }
+
+      // 中间对比 2.移动节点
+      // 先确定不需要移动的点(最长递增子序列), 再对需要移动的点进行移动
+      const newSequence = moved ? getSequence(newIndexToOldIndexMap) : [];
+      for (let i = toBePatched - 1, j = newSequence.length - 1; i >= 0; i--) {
+        const nextIndex = i + s2;
+        const nextChild = arr2[nextIndex];
+        const ancher = nextIndex + 1 < len2 ? arr2[nextIndex + 1].el : null;
+
+        // 新arr节点在原arr的下标为0，新增
+        if (newIndexToOldIndexMap[i] === 0) {
+          patch(null, nextChild, container, parentInstance, ancher);
+        } else if (moved) {
+          if (j < 0 || i !== newSequence[j]) {
+            hostInsert(nextChild.el, container, ancher);
+          } else {
+            j--;
+          }
         }
       }
     }
@@ -267,4 +299,45 @@ export function createRenderer(options) {
   return {
     createApp: createAppApi(render),
   };
+}
+
+function getSequence(arr) {
+  const p = arr.slice();
+  const result = [0];
+  let i, j, u, v, c;
+  const len = arr.length;
+  for (i = 0; i < len; i++) {
+    const arrI = arr[i];
+    if (arrI !== 0) {
+      j = result[result.length - 1];
+      if (arr[j] < arrI) {
+        p[i] = j;
+        result.push(i);
+        continue;
+      }
+      u = 0;
+      v = result.length - 1;
+      while (u < v) {
+        c = (u + v) >> 1;
+        if (arr[result[c]] < arrI) {
+          u = c + 1;
+        } else {
+          v = c;
+        }
+      }
+      if (arrI < arr[result[u]]) {
+        if (u > 0) {
+          p[i] = result[u - 1];
+        }
+        result[u] = i;
+      }
+    }
+  }
+  u = result.length;
+  v = result[u - 1];
+  while (u-- > 0) {
+    result[u] = v;
+    v = p[v];
+  }
+  return result;
 }
