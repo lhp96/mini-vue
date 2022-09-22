@@ -4,6 +4,7 @@ import { Fragment, Text } from "./vnode";
 import { createAppApi } from "./createApp";
 import { effect } from "../reactivity";
 import { EMPTY_OBJ } from "../shared";
+import { shouldUpdateComponent } from "./componentUpdateUtils";
 
 export function createRenderer(options) {
   const {
@@ -263,28 +264,52 @@ export function createRenderer(options) {
     if (!n1) {
       mountComponent(n2, container, parentInstance, anchor);
     } else {
+      updateComponent(n1, n2);
     }
   }
   function mountComponent(initialVNode, container, parentInstance, anchor) {
-    const instance = createComponentInstance(initialVNode, parentInstance);
+    const instance = (initialVNode.component = createComponentInstance(
+      initialVNode,
+      parentInstance
+    ));
 
     setupComponent(instance);
     setupRenderEffect(instance, initialVNode, container, anchor);
   }
   function setupRenderEffect(instance, initialVNode, container, anchor) {
-    effect(() => {
+    instance.update = effect(() => {
+      const { proxy, subTree: preSubTree } = instance;
       if (!instance.isMounted) {
-        const { proxy } = instance;
         const subTree = (instance.subTree = instance.render.call(proxy));
         patch(null, subTree, container, instance, anchor);
         initialVNode.el = subTree.el;
         instance.isMounted = true;
       } else {
-        const { proxy, subTree: preSubTree } = instance;
+        const { next, vnode } = instance;
+        if (next) {
+          next.el = vnode.el;
+          updateComponentPreRender(instance, next);
+        }
         const subTree = (instance.subTree = instance.render.call(proxy));
         patch(preSubTree, subTree, container, instance, anchor);
       }
     });
+  }
+
+  function updateComponent(n1, n2) {
+    const instance = (n2.component = n1.component);
+    if (shouldUpdateComponent(n1, n2)) {
+      instance.next = n2;
+      instance.update();
+    } else {
+      n2.el = n1.else;
+      instance.vnode = n2;
+    }
+  }
+  function updateComponentPreRender(instance, nextVNode) {
+    instance.vnode = nextVNode;
+    instance.props = nextVNode.props;
+    instance.next = null;
   }
 
   function unmountChildren(children) {
