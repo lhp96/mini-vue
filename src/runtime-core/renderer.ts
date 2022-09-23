@@ -5,6 +5,7 @@ import { createAppApi } from "./createApp";
 import { effect } from "../reactivity";
 import { EMPTY_OBJ } from "../shared";
 import { shouldUpdateComponent } from "./componentUpdateUtils";
+import { queueJobs } from "./scheduler";
 
 export function createRenderer(options) {
   const {
@@ -277,23 +278,30 @@ export function createRenderer(options) {
     setupRenderEffect(instance, initialVNode, container, anchor);
   }
   function setupRenderEffect(instance, initialVNode, container, anchor) {
-    instance.update = effect(() => {
-      const { proxy, subTree: preSubTree } = instance;
-      if (!instance.isMounted) {
-        const subTree = (instance.subTree = instance.render.call(proxy));
-        patch(null, subTree, container, instance, anchor);
-        initialVNode.el = subTree.el;
-        instance.isMounted = true;
-      } else {
-        const { next, vnode } = instance;
-        if (next) {
-          next.el = vnode.el;
-          updateComponentPreRender(instance, next);
+    instance.update = effect(
+      () => {
+        const { proxy, subTree: preSubTree } = instance;
+        if (!instance.isMounted) {
+          const subTree = (instance.subTree = instance.render.call(proxy));
+          patch(null, subTree, container, instance, anchor);
+          initialVNode.el = subTree.el;
+          instance.isMounted = true;
+        } else {
+          const { next, vnode } = instance;
+          if (next) {
+            next.el = vnode.el;
+            updateComponentPreRender(instance, next);
+          }
+          const subTree = (instance.subTree = instance.render.call(proxy));
+          patch(preSubTree, subTree, container, instance, anchor);
         }
-        const subTree = (instance.subTree = instance.render.call(proxy));
-        patch(preSubTree, subTree, container, instance, anchor);
+      },
+      {
+        scheduler: () => {
+          queueJobs(instance.update);
+        },
       }
-    });
+    );
   }
 
   function updateComponent(n1, n2) {
@@ -302,7 +310,7 @@ export function createRenderer(options) {
       instance.next = n2;
       instance.update();
     } else {
-      n2.el = n1.else;
+      n2.el = n1.el;
       instance.vnode = n2;
     }
   }

@@ -1,5 +1,6 @@
 import { h, ref } from "../../lib/mini-vue.esm.js";
 import Child from "./Child.js";
+import NextTicker from "./nextTicker.js";
 
 export const App = {
   name: "App",
@@ -41,6 +42,7 @@ export const App = {
         "change self count"
       ),
       h("p", {}, "count: " + this.count),
+      h(NextTicker),
     ]);
   },
 };
