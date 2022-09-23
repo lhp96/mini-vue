@@ -22,6 +22,14 @@ export function insert(child, parent, anchor) {
   parent.insertBefore(child, anchor || null);
 }
 
+export function nextSibling(node) {
+  return node.nextSibling;
+}
+
+export function setText(node, text) {
+  node.nodeValue = text;
+}
+
 export function setElementText(node, text) {
   node.textContent = text;
 }
@@ -41,6 +49,8 @@ const renderer: any = createRenderer({
   createElement,
   patchProp,
   insert,
+  nextSibling,
+  setText,
   setElementText,
   createText,
   remove,

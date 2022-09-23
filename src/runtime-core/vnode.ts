@@ -34,6 +34,10 @@ function getShapeFlag(type: any) {
     : ShapeFlags.STATEFUL_COMPONENT;
 }
 
+export function isSameVNodeType(n1, n2) {
+  return n1.type === n2.type && n1.key === n2.key;
+}
+
 export function createTextVNode(text: string) {
   return createVNode(Text, {}, text);
 }

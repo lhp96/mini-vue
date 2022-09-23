@@ -1,6 +1,6 @@
 import { ShapeFlags } from "../shared/ShapFlags";
 import { createComponentInstance, setupComponent } from "./component";
-import { Fragment, Text } from "./vnode";
+import { Fragment, isSameVNodeType, Text } from "./vnode";
 import { createAppApi } from "./createApp";
 import { effect } from "../reactivity";
 import { EMPTY_OBJ } from "../shared";
@@ -12,6 +12,8 @@ export function createRenderer(options) {
     createElement: hostCreateElement,
     patchProp: hostPatchProp,
     insert: hostInsert,
+    nextSibling: hostNextSilbing,
+    setText: hostSetText,
     setElementText: hostSetElementText,
     createText: hostCreateText,
     remove: hostRemove,
@@ -21,13 +23,19 @@ export function createRenderer(options) {
     patch(null, vnode, container, null, null);
   }
   function patch(n1, n2, container, parentInstance, anchor) {
+    if (n1 === n2) return;
+    if (n1 && !isSameVNodeType(n1, n2)) {
+      anchor = getNextHostNode(n1);
+      unmount(n1);
+      n1 = null;
+    }
     const { type, shapeFlag } = n2;
     switch (type) {
       case Fragment:
         processFragment(n1, n2, container, parentInstance, anchor);
         break;
       case Text:
-        processText(n1, n2, container);
+        processText(n1, n2, container, anchor);
         break;
 
       default:
@@ -49,10 +57,15 @@ export function createRenderer(options) {
     }
   }
 
-  function processText(n1, n2: any, container: any) {
+  function processText(n1, n2: any, container: any, anchor) {
     if (!n1) {
-      const textNode = (n2.el = hostCreateText(n2.children));
-      hostInsert(textNode, container);
+      const textNode = (n2.el = hostCreateText(n2.children as string));
+      hostInsert(textNode, container, anchor);
+    } else {
+      const el = (n2.el = n1.el);
+      if (n2.children !== n1.children) {
+        hostSetText(el, n2.children as string);
+      }
     }
   }
 
@@ -89,18 +102,13 @@ export function createRenderer(options) {
   }
 
   function patchElement(n1, n2, container: any, parentInstance: any, anchor) {
-    // type props children
+    // type[在patch()已处理] props children
     // patchChildren -> diff 算法
-    if (n1.type !== n2.type) {
-      unmount(n1);
-      mountElement(n2, container, parentInstance, anchor);
-    } else {
-      const oldProps = n1.props || EMPTY_OBJ;
-      const newProps = n2.props || EMPTY_OBJ;
-      const el = (n2.el = n1.el);
-      patchProps(el, oldProps, newProps);
-      patchChildren(n1, n2, el, parentInstance, anchor);
-    }
+    const oldProps = n1.props || EMPTY_OBJ;
+    const newProps = n2.props || EMPTY_OBJ;
+    const el = (n2.el = n1.el);
+    patchProps(el, oldProps, newProps);
+    patchChildren(n1, n2, el, parentInstance, anchor);
   }
   function patchProps(el, oldProps, newProps) {
     if (oldProps !== newProps) {
@@ -154,9 +162,6 @@ export function createRenderer(options) {
     let len1 = arr1.length;
     let len2 = arr2.length;
     let idx = 0;
-    function isSameVNodeType(n1, n2) {
-      return n1.type === n2.type && n1.key === n2.key;
-    }
 
     // 从左边开始对比
     while (idx <= e1 && idx <= e2) {
@@ -318,6 +323,12 @@ export function createRenderer(options) {
     instance.vnode = nextVNode;
     instance.props = nextVNode.props;
     instance.next = null;
+  }
+
+  function getNextHostNode(vnode: any) {
+    if (vnode.shapeFlag & ShapeFlags.STATEFUL_COMPONENT) {
+    }
+    return hostNextSilbing(vnode.anchor || vnode.el);
   }
 
   function unmountChildren(children) {
