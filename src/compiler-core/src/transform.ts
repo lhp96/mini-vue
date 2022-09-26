@@ -19,7 +19,7 @@ function traverseNode(node: any, context: any) {
   if (!node) return;
   const transforms = context.nodeTransforms;
   for (let i = 0; i < transforms.length; i++) {
-    transforms[i](node);
+    transforms[i](node, context);
   }
 
   switch (node.type) {
