@@ -27,7 +27,7 @@ describe("codegen", () => {
   });
 
   it("element", () => {
-    const ast = baseParse(`<div></div>`);
+    const ast = baseParse(`<div><p></p></div>`);
     transform(ast, {
       nodeTransforms: [transformElement],
     });
@@ -40,8 +40,7 @@ describe("codegen", () => {
     transform(ast, {
       nodeTransforms: [transformExpression, transformElement, transformText],
     });
-    console.log(ast.codegenNode.children.children);
-    // const { code } = generate(ast);
-    // expect(code).toMatchSnapshot();
+    const { code } = generate(ast);
+    expect(code).toMatchSnapshot();
   });
 });

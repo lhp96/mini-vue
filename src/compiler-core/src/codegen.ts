@@ -1,3 +1,4 @@
+import { isString } from "../../shared";
 import { NodeTypes } from "./ast";
 import {
   CREATE_ELEMENT_VNODE,
@@ -48,17 +49,57 @@ function genNode(node: any, context: any) {
     case NodeTypes.ELEMENT:
       genElement(node, context);
       break;
+    case NodeTypes.COMPOUND_EXPRESSION:
+      genCompoundExpression(node, context);
+      break;
     default:
       break;
   }
 }
 
+function genCompoundExpression(node: any, context: any) {
+  const { push } = context;
+  const { children } = node;
+  children.forEach((child) => {
+    if (isString(child)) {
+      push(child);
+    } else {
+      genNode(child, context);
+    }
+  });
+}
+
 function genElement(node: any, context: any) {
   const { push, helper } = context;
-  push(`${helper(CREATE_ELEMENT_VNODE)}("${node.tag})"`);
-  node.children.forEach((node) => {
-    // TODO generate Children
-  });
+  const { tag, props, children } = node;
+  push(`${helper(CREATE_ELEMENT_VNODE)}(`);
+  // genChildren
+  genNodeList(genNullable([tag, props, children]), context);
+  push(`)`);
+}
+
+function genNodeList(nodes, context) {
+  const { push } = context;
+  for (let i = 0; i < nodes.length; i++) {
+    const node = nodes[i];
+    if (isString(node)) {
+      // 处理空值 props / children
+      push(node);
+    } else {
+      // 处理 children
+      genNode(node, context);
+    }
+
+    if (i < nodes.length - 1) {
+      push(", ");
+    }
+  }
+}
+// 处理没有传入的数据变为 "null", eg-> props:{}, children:[]
+function genNullable(args: any) {
+  return args.map((arg) =>
+    Array.isArray(arg) ? (arg.length ? arg : "null") : arg || "null"
+  );
 }
 
 function genText(node: any, context: any) {
