@@ -1,7 +1,8 @@
 import { NodeTypes } from "../ast";
+import { CREATE_TEXT_VNODE } from "../runtimeHelpers";
 import { isText } from "../utils";
 
-export function transformText(node) {
+export function transformText(node, context) {
   if (node.type === NodeTypes.ELEMENT) {
     return () => {
       const { children } = node;
@@ -13,6 +14,7 @@ export function transformText(node) {
             const next = children[j];
             if (isText(next)) {
               if (!currentContainer) {
+                context.helper(CREATE_TEXT_VNODE);
                 currentContainer = children[i] = {
                   type: NodeTypes.COMPOUND_EXPRESSION,
                   children: [child],
