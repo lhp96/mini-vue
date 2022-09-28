@@ -81,13 +81,27 @@ function genElement(node: any, context: any) {
 function genNodeList(nodes, context) {
   const { push } = context;
   for (let i = 0; i < nodes.length; i++) {
-    const node = nodes[i];
+    const node: any = nodes[i];
     if (isString(node)) {
       // 处理空值 props / children
       push(node);
     } else {
       // 处理 children
-      genNode(node, context);
+      if (Array.isArray(node) && node.length) {
+        push(`[`);
+        for (let j = 0; j < node.length; j++) {
+          const child = node[j];
+          genNode(child.codegenNode, context);
+          if (j < node.length - 1) {
+            push(", ");
+          }
+        }
+        push(`]`);
+        return;
+      } else {
+        console.log("进入 子genNode --- 应该不会再进入");
+        genNode(node, context);
+      }
     }
 
     if (i < nodes.length - 1) {

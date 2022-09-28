@@ -35,7 +35,17 @@ describe("codegen", () => {
     expect(code).toMatchSnapshot();
   });
 
-  it("element & text & interpolation", () => {
+  it("element Nested", () => {
+    const ast = baseParse(`<div><p></p><t></t><p></p></div>`);
+    transform(ast, {
+      nodeTransforms: [transformElement],
+    });
+    // console.log(ast.codegenNode.children);
+    const { code } = generate(ast);
+    expect(code).toMatchSnapshot();
+  });
+
+  it.skip("element & text & interpolation", () => {
     const ast: any = baseParse(`<div>hi,{{  message }}</div>`);
     transform(ast, {
       nodeTransforms: [transformExpression, transformElement, transformText],

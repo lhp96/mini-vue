@@ -7,7 +7,12 @@ return function render(_ctx, _cache){return _createElemetVNode('div', null, 'hi,
 
 exports[`codegen element 1`] = `
 "const { createElemetVNode: _createElemetVNode } = Vue
-return function render(_ctx, _cache){return _createElemetVNode('div', null, _createElemetVNode(p, null, null))}"
+return function render(_ctx, _cache){return _createElemetVNode('div', null, [_createElemetVNode('p', null, null)])}"
+`;
+
+exports[`codegen element Nested 1`] = `
+"const { createElemetVNode: _createElemetVNode } = Vue
+return function render(_ctx, _cache){return _createElemetVNode('div', null, [_createElemetVNode('p', null, null), _createElemetVNode('t', null, null), _createElemetVNode('p', null, null)])}"
 `;
 
 exports[`codegen interpolation 1`] = `

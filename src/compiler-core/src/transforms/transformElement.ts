@@ -9,7 +9,7 @@ export function transformElement(node, context) {
       let vnodeProps;
       // children
       const { children } = node;
-      let vnodeChildren = children[0];
+      let vnodeChildren = children;
 
       node.codegenNode = createVNodeCall(
         context,
