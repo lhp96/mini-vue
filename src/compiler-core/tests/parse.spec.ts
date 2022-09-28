@@ -32,7 +32,7 @@ describe("Parse", () => {
   describe("element tagName has Number", () => {
     it("simple element div", () => {
       const ast = baseParse(`<div><h1></h1><h5></h5></div>`);
-      console.log(ast);
+      // console.log(ast);
       expect(ast.children[0]).toStrictEqual({
         type: NodeTypes.ELEMENT,
         tag: "div",

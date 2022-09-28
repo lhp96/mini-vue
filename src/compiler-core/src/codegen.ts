@@ -2,6 +2,7 @@ import { isString } from "../../shared";
 import { NodeTypes } from "./ast";
 import {
   CREATE_ELEMENT_VNODE,
+  CREATE_TEXT_VNODE,
   helperMapName,
   TO_DISPLAY_STRING,
 } from "./runtimeHelpers";
@@ -58,8 +59,9 @@ function genNode(node: any, context: any) {
 }
 
 function genCompoundExpression(node: any, context: any) {
-  const { push } = context;
+  const { push, helper } = context;
   const { children } = node;
+  push(`${helper(CREATE_TEXT_VNODE)}(`);
   children.forEach((child) => {
     if (isString(child)) {
       push(child);
@@ -67,6 +69,7 @@ function genCompoundExpression(node: any, context: any) {
       genNode(child, context);
     }
   });
+  push(`)`);
 }
 
 function genElement(node: any, context: any) {
@@ -88,18 +91,26 @@ function genNodeList(nodes, context) {
     } else {
       // 处理 children
       if (Array.isArray(node) && node.length) {
-        push(`[`);
-        for (let j = 0; j < node.length; j++) {
-          const child = node[j];
-          genNode(child.codegenNode, context);
-          if (j < node.length - 1) {
-            push(", ");
+        if (node.length === 1 && node[0].type !== NodeTypes.ELEMENT) {
+          genNode(node[0], context);
+        } else {
+          push(`[`);
+          for (let j = 0; j < node.length; j++) {
+            const child = node[j];
+            if (child && child.codegenNode) {
+              genNode(child.codegenNode, context);
+            } else {
+              genNode(child, context);
+            }
+            if (j < node.length - 1) {
+              push(", ");
+            }
           }
+          push(`]`);
         }
-        push(`]`);
         return;
       } else {
-        console.log("进入 子genNode --- 应该不会再进入");
+        // console.log("进入 子genNode --- 应该不会再进入");
         genNode(node, context);
       }
     }

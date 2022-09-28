@@ -45,8 +45,19 @@ describe("codegen", () => {
     expect(code).toMatchSnapshot();
   });
 
-  it.skip("element & text & interpolation", () => {
+  it("element & text & interpolation", () => {
     const ast: any = baseParse(`<div>hi,{{  message }}</div>`);
+    transform(ast, {
+      nodeTransforms: [transformExpression, transformElement, transformText],
+    });
+    const { code } = generate(ast);
+    expect(code).toMatchSnapshot();
+  });
+
+  it("complex template", () => {
+    const ast: any = baseParse(
+      `<div>hi,{{count}}---- written by lhp96<h1>have a nice Day</h1><p>2022.9.28</p></div>`
+    );
     transform(ast, {
       nodeTransforms: [transformExpression, transformElement, transformText],
     });
