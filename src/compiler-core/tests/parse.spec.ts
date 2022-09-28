@@ -29,6 +29,29 @@ describe("Parse", () => {
     });
   });
 
+  describe("element tagName has Number", () => {
+    it("simple element div", () => {
+      const ast = baseParse(`<div><h1></h1><h5></h5></div>`);
+      console.log(ast);
+      expect(ast.children[0]).toStrictEqual({
+        type: NodeTypes.ELEMENT,
+        tag: "div",
+        children: [
+          {
+            type: NodeTypes.ELEMENT,
+            tag: "h1",
+            children: [],
+          },
+          {
+            type: NodeTypes.ELEMENT,
+            tag: "h5",
+            children: [],
+          },
+        ],
+      });
+    });
+  });
+
   describe("text", () => {
     it("simple text", () => {
       const ast = baseParse("some text");

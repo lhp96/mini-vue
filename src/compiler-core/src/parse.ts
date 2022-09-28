@@ -87,7 +87,7 @@ function parseElement(context: any, ancestors) {
 }
 
 function parseTag(context: any, tagType) {
-  const match: any = /^<\/?([a-z]*)/i.exec(context.source);
+  const match: any = /^<\/?([a-z]*[0-9]?)/i.exec(context.source);
   const tag = match[1];
   advanceBy(context, match[0].length);
   advanceBy(context, 1);
