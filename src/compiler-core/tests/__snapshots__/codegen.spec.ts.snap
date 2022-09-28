@@ -1,12 +1,12 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`codegen complex template 1`] = `
-"const { toDisplayString: _toDisplayString,createElementVNode: _createElementVNode } = Vue
+"const { toDisplayString: _toDisplayString,createElementVNode: _createElementVNode,createTextVNode: _createTextVNode } = Vue
 return function render(_ctx, _cache){return _createElementVNode('div', null, [_createTextVNode('hi,' + _toDisplayString(_ctx.count) + '---- written by lhp96'), _createElementVNode('h1', null, 'have a nice Day'), _createElementVNode('p', null, '2022.9.28')])}"
 `;
 
 exports[`codegen element & text & interpolation 1`] = `
-"const { toDisplayString: _toDisplayString,createElementVNode: _createElementVNode } = Vue
+"const { toDisplayString: _toDisplayString,createTextVNode: _createTextVNode,createElementVNode: _createElementVNode } = Vue
 return function render(_ctx, _cache){return _createElementVNode('div', null, _createTextVNode('hi,' + _toDisplayString(_ctx.message)))}"
 `;
 
